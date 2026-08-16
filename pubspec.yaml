@@ -1,0 +1,38 @@
+name: inventory_app
+description: تطبيق إدارة المخزن
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # قاعدة البيانات المحلية
+  sqflite: ^2.3.2
+  path: ^1.9.0
+  path_provider: ^2.1.2
+
+  # توليد ومشاركة PDF
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  share_plus: ^7.2.2
+
+  # تنسيق الأرقام والتواريخ
+  intl: ^0.19.0
+
+  # خطوط جميلة
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fonts/
