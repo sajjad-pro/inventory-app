@@ -1,0 +1,52 @@
+name: Build Android APK
+
+# يبني APK تلقائياً كلما رفعت كود جديد إلى فرع main
+# أو يدوياً من تبويب Actions بالضغط على "Run workflow"
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: سحب الكود من المستودع
+        uses: actions/checkout@v4
+
+      - name: تثبيت Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: تثبيت Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: إنشاء مشروع Flutter نظيف في مجلد مؤقت (يولّد android/ios تلقائياً)
+        run: |
+          flutter create --project-name inventory_app --org com.inventory scaffold_tmp
+
+      - name: نسخ الكود الخاص بك (lib, pubspec, assets) فوق المشروع النظيف
+        run: |
+          cp -r lib/. scaffold_tmp/lib/
+          cp pubspec.yaml scaffold_tmp/pubspec.yaml
+          rm -rf scaffold_tmp/assets
+          cp -r assets scaffold_tmp/assets
+
+      - name: تثبيت الحزم (Dependencies)
+        working-directory: scaffold_tmp
+        run: flutter pub get
+
+      - name: بناء APK جاهز للتثبيت
+        working-directory: scaffold_tmp
+        run: flutter build apk --release
+
+      - name: رفع ملف APK كمُخرج (Artifact) لتحميله
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-app-apk
+          path: scaffold_tmp/build/app/outputs/flutter-apk/app-release.apk
