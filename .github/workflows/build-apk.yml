@@ -34,8 +34,8 @@ jobs:
         run: |
           cp -r lib/. scaffold_tmp/lib/
           cp pubspec.yaml scaffold_tmp/pubspec.yaml
-          rm -rf scaffold_tmp/assets
-          cp -r assets scaffold_tmp/assets
+          mkdir -p scaffold_tmp/assets/fonts
+          if [ -d "assets" ]; then cp -r assets/. scaffold_tmp/assets/; fi
 
       - name: تثبيت الحزم (Dependencies)
         working-directory: scaffold_tmp
