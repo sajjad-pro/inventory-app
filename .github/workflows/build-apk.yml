@@ -30,7 +30,9 @@ jobs:
 
       - name: Fix Kotlin version bug
         run: |
-          sed -i "s/ext.kotlin_version = '<latest-version>'/ext.kotlin_version = '1.9.10'/" scaffold_tmp/android/build.gradle || true
+          sed -i "s/.*latest-version.*/        ext.kotlin_version = '1.9.10'/" scaffold_tmp/android/build.gradle
+          echo "----- build.gradle after fix -----"
+          cat scaffold_tmp/android/build.gradle
 
       - name: Copy your code
         run: |
