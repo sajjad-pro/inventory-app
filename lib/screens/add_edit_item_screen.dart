@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/inventory_item.dart';
 
-/// شاشة موحّدة للإضافة والتعديل معاً
-/// إن تم تمرير [existingItem] تعمل الشاشة في وضع "تعديل"، وإلا "إضافة"
 class AddEditItemScreen extends StatefulWidget {
   final InventoryItem? existingItem;
 
@@ -28,12 +26,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     super.initState();
     final item = widget.existingItem;
     _nameCtrl = TextEditingController(text: item?.name ?? '');
-    _receivedCtrl =
-        TextEditingController(text: item != null ? _fmt(item.received) : '');
-    _issuedCtrl =
-        TextEditingController(text: item != null ? _fmt(item.issued) : '');
-    _deliveredCtrl =
-        TextEditingController(text: item != null ? _fmt(item.delivered) : '');
+    _receivedCtrl = TextEditingController(text: item != null ? _fmt(item.received) : '');
+    _issuedCtrl = TextEditingController(text: item != null ? _fmt(item.issued) : '');
+    _deliveredCtrl = TextEditingController(text: item != null ? _fmt(item.delivered) : '');
   }
 
   String _fmt(double v) => v == v.roundToDouble() ? v.toInt().toString() : v.toString();
@@ -47,8 +42,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     super.dispose();
   }
 
-  /// تحقق عام: رقم غير سالب
-  String? _validateNumber(String? value, {required String label}) {
+  String? _validateNumber(String? value, String label) {
     if (value == null || value.trim().isEmpty) {
       return 'الرجاء إدخال $label';
     }
@@ -69,12 +63,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     final issued = double.parse(_issuedCtrl.text.trim());
     final delivered = double.parse(_deliveredCtrl.text.trim());
 
-    // تحقق منطقي إضافي: لا يمكن صرف/تسليم أكثر من المستلم
     if (issued + delivered > received) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'مجموع الكمية المصروفة والمسلمة أكبر من الكمية المستلمة!'),
+          content: Text('مجموع الكمية المصروفة والمسلمة أكبر من الكمية المستلمة'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -112,39 +104,20 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              _buildField(
-                controller: _nameCtrl,
-                label: 'اسم المادة',
-                icon: Icons.inventory_2_outlined,
-                keyboardType: TextInputType.text,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'الرجاء إدخال اسم المادة'
-                    : null,
-              ),
+              buildTextField(_nameCtrl, 'اسم المادة', Icons.inventory_2_outlined, TextInputType.text,
+                  (v) => (v == null || v.trim().isEmpty) ? 'الرجاء إدخال اسم المادة' : null),
               const SizedBox(height: 16),
-              _buildField(
-                controller: _receivedCtrl,
-                label: 'الكمية المستلمة',
-                icon: Icons.download_outlined,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => _validateNumber(v, label: 'الكمية المستلمة'),
-              ),
+              buildTextField(_receivedCtrl, 'الكمية المستلمة', Icons.download_outlined,
+                  const TextInputType.numberWithOptions(decimal: true),
+                  (v) => _validateNumber(v, 'الكمية المستلمة')),
               const SizedBox(height: 16),
-              _buildField(
-                controller: _issuedCtrl,
-                label: 'الكمية المصروفة',
-                icon: Icons.upload_outlined,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => _validateNumber(v, label: 'الكمية المصروفة'),
-              ),
+              buildTextField(_issuedCtrl, 'الكمية المصروفة', Icons.upload_outlined,
+                  const TextInputType.numberWithOptions(decimal: true),
+                  (v) => _validateNumber(v, 'الكمية المصروفة')),
               const SizedBox(height: 16),
-              _buildField(
-                controller: _deliveredCtrl,
-                label: 'الكمية المسلمة',
-                icon: Icons.local_shipping_outlined,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => _validateNumber(v, label: 'الكمية المسلمة'),
-              ),
+              buildTextField(_deliveredCtrl, 'الكمية المسلمة', Icons.local_shipping_outlined,
+                  const TextInputType.numberWithOptions(decimal: true),
+                  (v) => _validateNumber(v, 'الكمية المسلمة')),
               const SizedBox(height: 32),
               SizedBox(
                 height: 52,
@@ -153,14 +126,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   icon: const Icon(Icons.check_circle_outline),
                   label: Text(
                     isEditing ? 'حفظ التعديلات' : 'إضافة المادة',
-                    style: GoogleFonts.cairo(
-                        fontSize: 16, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.cairo(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E5AA8),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -171,13 +142,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     );
   }
 
-  Widget _buildField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required TextInputType keyboardType,
-    required String? Function(String?) validator,
-  }) {
+  Widget buildTextField(TextEditingController controller, String label, IconData icon,
+      TextInputType keyboardType, String? Function(String?) validator) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -204,4 +170,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderS
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      ),
+    );
+  }
+}
