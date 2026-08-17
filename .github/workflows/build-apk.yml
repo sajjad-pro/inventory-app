@@ -31,8 +31,9 @@ jobs:
       - name: Fix Kotlin version bug
         run: |
           sed -i "s/.*latest-version.*/        ext.kotlin_version = '1.9.10'/" scaffold_tmp/android/build.gradle
-          echo "----- build.gradle after fix -----"
-          cat scaffold_tmp/android/build.gradle
+          sed -i "s/id \"org.jetbrains.kotlin.android\" version .*/id \"org.jetbrains.kotlin.android\" version \"1.9.10\" apply false/" scaffold_tmp/android/settings.gradle
+          echo "----- settings.gradle after fix -----"
+          cat scaffold_tmp/android/settings.gradle
 
       - name: Copy your code
         run: |
