@@ -1,7 +1,5 @@
 name: Build Android APK
 
-# يبني APK تلقائياً كلما رفعت كود جديد إلى فرع main
-# أو يدوياً من تبويب Actions بالضغط على "Run workflow"
 on:
   push:
     branches: [ main ]
@@ -11,41 +9,45 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: سحب الكود من المستودع
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: تثبيت Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: تثبيت Flutter SDK
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
 
-      - name: إنشاء مشروع Flutter نظيف في مجلد مؤقت (يولّد android/ios تلقائياً)
+      - name: Create clean Flutter project
         run: |
           flutter create --project-name inventory_app --org com.inventory scaffold_tmp
 
-      - name: نسخ الكود الخاص بك (lib, pubspec, assets) فوق المشروع النظيف
+      - name: Fix Kotlin version bug
+        run: |
+          sed -i "s/ext.kotlin_version = '<latest-version>'/ext.kotlin_version = '1.9.10'/" scaffold_tmp/android/build.gradle || true
+
+      - name: Copy your code
         run: |
           cp -r lib/. scaffold_tmp/lib/
           cp pubspec.yaml scaffold_tmp/pubspec.yaml
           mkdir -p scaffold_tmp/assets/fonts
           if [ -d "assets" ]; then cp -r assets/. scaffold_tmp/assets/; fi
 
-      - name: تثبيت الحزم (Dependencies)
+      - name: Get dependencies
         working-directory: scaffold_tmp
         run: flutter pub get
 
-      - name: بناء APK جاهز للتثبيت
+      - name: Build APK
         working-directory: scaffold_tmp
         run: flutter build apk --release
 
-      - name: رفع ملف APK كمُخرج (Artifact) لتحميله
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: inventory-app-apk
